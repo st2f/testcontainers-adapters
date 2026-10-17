@@ -73,13 +73,14 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 ## 7. Add GitHub Actions CI
 
-- [ ] Add `.github/workflows/ci.yml` for pull requests and pushes to the repository's default branch. Use a supported GitHub-hosted Ubuntu runner with Docker available.
-- [ ] Use a two-entry matrix for PostgreSQL and OpenSearch so their results are visible independently. Each job checks out the repository, sets up the selected Node.js LTS version with npm caching, runs `npm ci`, runs type checking, and invokes `npm run test:postgres` or `npm run test:opensearch` as appropriate.
-- [ ] Let Testcontainers provision infrastructure inside each job. Do not add duplicate workflow service containers or fixed host-port assumptions. Check the selected runner's OpenSearch resource and kernel requirements, and configure any required runner settings explicitly.
-- [ ] Set finite job timeouts, read-only repository permissions, and matrix `fail-fast: false` so one adapter failure does not hide the other's result. Use noninteractive test commands and retain useful failure output.
-- [ ] Verify both commands locally with the available runtime. Check both CI jobs after the workflow is triggered; report any unverified CI behavior in chat.
+- [x] Add `.github/workflows/ci.yml` for pull requests and pushes to the repository's default branch. Use a supported GitHub-hosted Ubuntu runner with Docker available.
+- [x] Use a two-entry matrix for PostgreSQL and OpenSearch so their results are visible independently. Each job checks out the repository, sets up the selected Node.js LTS version with npm caching, runs `npm ci`, runs type checking, and invokes `npm run test:postgres` or `npm run test:opensearch` as appropriate.
+- [x] Let Testcontainers provision infrastructure inside each job. Do not add duplicate workflow service containers or fixed host-port assumptions. Check the selected runner's OpenSearch resource and kernel requirements, and configure any required runner settings explicitly.
+- [x] Set finite job timeouts, read-only repository permissions, and matrix `fail-fast: false` so one adapter failure does not hide the other's result. Use noninteractive test commands and retain useful failure output.
+- [x] Verify both commands locally with the available runtime.
+- [ ] Check both CI jobs after the workflow is triggered.
 
-**Checkpoint:** CI runs both suites independently and checks types.
+**Checkpoint:** workflow validation and local checks pass; GitHub execution pending.
 
 ## 8. Finish the demonstration and documentation
 

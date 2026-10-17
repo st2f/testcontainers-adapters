@@ -28,6 +28,8 @@ Tests run once; UI commands stay in watch mode. The shared contract helper is im
 
 Both suites run the same repository contract against real containers. PostgreSQL also checks its status constraint; OpenSearch checks its mapping and missing-index errors. OpenSearch uses real-time document reads by ID, so these tests need no search refresh delays.
 
+The [CI workflow](.github/workflows/ci.yml) checks types and runs each adapter suite independently on pull requests and pushes to `main`.
+
 ## Optional: Colima
 
 ```sh
