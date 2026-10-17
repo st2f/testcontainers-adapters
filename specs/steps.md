@@ -35,13 +35,13 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 ## 4. Write the reusable contract tests
 
-- [ ] Add `test/integration/contract/article-repository.contract.ts` exporting a function that registers the same Vitest cases for any repository instance. Accept a repository getter so suite setup can initialize it before tests execute.
-- [ ] Cover create → find, create → update → find, and missing ID → `null`. Assert full domain-object equality, update all editable fields, and verify that the ID stays unchanged.
-- [ ] Cover the documented update result for existing and missing IDs, including that a missing update does not create an article.
-- [ ] Give every case a distinct ID with `crypto.randomUUID()`. Avoid order dependence and shared records; do not add delete to the application contract solely for test cleanup.
-- [ ] Exercise the thin use cases in the shared create/update scenarios so the example shows application code working with both adapters through the same port.
+- [x] Add `test/integration/contract/article-repository.contract.ts` exporting a function that registers the same Vitest cases for any repository instance. Accept a repository getter so suite setup can initialize it before tests execute.
+- [x] Cover create → find, create → update → find, and missing ID → `null`. Assert full domain-object equality, update all editable fields, and verify that the ID stays unchanged.
+- [x] Cover the documented update result for existing and missing IDs, including that a missing update does not create an article.
+- [x] Give every case a distinct ID with `crypto.randomUUID()`. Avoid order dependence and shared records; do not add delete to the application contract solely for test cleanup.
+- [x] Exercise the thin use cases in the shared create/update scenarios so the example shows application code working with both adapters through the same port.
 
-**Checkpoint:** the helper contains no PostgreSQL or OpenSearch knowledge and can be registered unchanged by both suites.
+**Checkpoint:** shared contract cases added and type checking passes. Execution follows with each adapter.
 
 ## 5. Implement and verify PostgreSQL
 
