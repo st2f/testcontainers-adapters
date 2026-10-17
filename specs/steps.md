@@ -25,13 +25,13 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 ## 3. Define the domain and persistence contract
 
-- [ ] Create `src/domain/article.ts` with exactly the `Article` fields and status union specified in the goal.
-- [ ] Create `src/application/ports/article-repository.ts` with asynchronous `create(article)`, `findById(id)`, and `update(article)` operations.
-- [ ] Use these simple semantics consistently: `create` resolves without a result; `findById` returns `Article | null`; `update` replaces the editable fields of an existing article and returns a boolean indicating whether it existed. Updating must preserve the ID and must not insert a missing article.
-- [ ] Document those semantics next to the interface. Keep database types, clients, container configuration, and concurrency tokens out of the domain and application layers.
-- [ ] Add thin `create-article.ts` and `update-article.ts` use cases that receive an `ArticleRepository` and delegate to it. Keep ID generation with the caller and omit validation or workflows not required by the goal.
+- [x] Create `src/domain/Article.ts` with exactly the `Article` fields and status union specified in the goal.
+- [x] Create `src/application/ports/ArticleRepository.ts` with asynchronous `create(article)`, `findById(id)`, and `update(article)` operations.
+- [x] Use these simple semantics consistently: `create` resolves without a result; `findById` returns `Article | null`; `update` replaces the editable fields of an existing article and returns a boolean indicating whether it existed. Updating must preserve the ID and must not insert a missing article.
+- [x] Document those semantics next to the interface. Keep database types, clients, container configuration, and concurrency tokens out of the domain and application layers.
+- [x] Add thin `CreateArticle` and `UpdateArticle` classes with constructor-injected `ArticleRepository` dependencies and `execute(article)` methods. Keep ID generation with the caller and omit validation or workflows not required by the goal.
 
-**Checkpoint:** the application compiles without importing either database client or Testcontainers.
+**Checkpoint:** type checking passes; domain and application have no infrastructure dependencies.
 
 ## 4. Write the reusable contract tests
 
@@ -45,7 +45,7 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 ## 5. Implement and verify PostgreSQL
 
-- [ ] Add `src/adapters/outbound/postgres/postgres-article-repository.ts` using an injected `pg` pool and parameterized SQL.
+- [ ] Add a `PostgresArticleRepository` class implementing `ArticleRepository` in `src/adapters/outbound/postgres/PostgresArticleRepository.ts`, using a constructor-injected `pg` pool and parameterized SQL.
 - [ ] Define explicit setup DDL for an `articles` table with `article_id`, `title`, `body`, and `publication_status`. Use a text primary key, required fields, and a check constraint for the two statuses.
 - [ ] Keep database setup in a small PostgreSQL-specific helper or SQL file reused by the integration fixture. Avoid migration tooling for this single-table demo.
 - [ ] Map database rows explicitly to `Article`; use the affected row count to implement the update result.
@@ -58,7 +58,7 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 ## 6. Implement and verify OpenSearch
 
-- [ ] Add `src/adapters/outbound/opensearch/opensearch-article-repository.ts` using an injected OpenSearch client and index name. Keep index configuration and representation mapping in the OpenSearch adapter directory.
+- [ ] Add an `OpenSearchArticleRepository` class implementing `ArticleRepository` in `src/adapters/outbound/opensearch/OpenSearchArticleRepository.ts`, using a constructor-injected OpenSearch client and index name. Keep index configuration and representation mapping in the OpenSearch adapter directory.
 - [ ] Create an explicit mapping: `headline` and `content` as text fields, `state` as a keyword field, and the article ID as the document `_id`. Consider strict dynamic mapping to make accidental field mismatches visible.
 - [ ] Map `{ title, content, status }` to `{ headline, content, state }` on writes and reconstruct the domain ID from document metadata on reads.
 - [ ] Use document creation and replacement/update operations with matching contract semantics. Ensure updates cannot upsert missing documents. Translate only document-not-found responses into `null` or `false`; let connection, mapping, missing-index, and other infrastructure errors fail the test.

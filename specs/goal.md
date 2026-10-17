@@ -107,31 +107,39 @@ For colima, you may use https://github.com/st2f/node-concurrency-patterns/blob/m
 ```text
 src/
 ├── domain/
-│   └── article.ts
+│   └── Article.ts                         # Article type
 ├── application/
 │   ├── ports/
-│   │   └── article-repository.ts
+│   │   └── ArticleRepository.ts          # ArticleRepository interface
 │   └── use-cases/
-│       ├── create-article.ts
-│       └── update-article.ts
+│       ├── CreateArticle.ts              # CreateArticle class
+│       └── UpdateArticle.ts              # UpdateArticle class
 └── adapters/
     └── outbound/
         ├── postgres/
-        │   └── postgres-article-repository.ts
+        │   └── PostgresArticleRepository.ts
+        │                                      # PostgresArticleRepository class
+        │                                      # implements ArticleRepository
         └── opensearch/
-            └── opensearch-article-repository.ts
-
+            └── OpenSearchArticleRepository.ts
+                                               # OpenSearchArticleRepository class
+                                               # implements ArticleRepository
 test/
 └── integration/
     ├── contract/
-    │   └── article-repository.contract.ts
+    │   └── article-repository.contract.ts  # shared contract test function
     ├── postgres/
     │   └── ...
     └── opensearch/
         └── ...
+
 ```
 
 Adjust filenames or small structural details when implementation needs justify it, but preserve the separation between domain/application code and infrastructure-specific code.
+
+Prefer classes for use cases and repository adapter implementations. Use constructor injection for use-case dependencies. Keep the domain model as simple TypeScript data and the repository port as an interface. Tests and test factories do not need to be classes.
+
+Naming: When a file is centered on a single named domain or architectural type (class, interface, or type), use the same PascalCase name for the file (e.g. CreateArticle.ts, ArticleRepository.ts, PostgresArticleRepository.ts). Keep utility/setup files in kebab-case or their conventional lowercase form.
 
 ## Constraints
 
