@@ -1,10 +1,10 @@
 # Testcontainers adapters demo
 
-A small Node.js + TypeScript project demonstrating how the same repository contract can be integration-tested against different persistence adapters using Testcontainers and Vitest.
-
-The demo uses PostgreSQL and OpenSearch implementations with deliberately different persistence models. Shared contract tests verify the same application behavior against each real dependency, while infrastructure-specific tests cover behavior such as PostgreSQL constraints and OpenSearch mappings.
+A small Node.js + TypeScript demo of interchangeable PostgreSQL and OpenSearch persistence adapters. Shared contract tests exercise the same application behavior against real, disposable infrastructure started by Testcontainers.
 
 ## Setup
+
+Use Node.js 24, npm, and a running Docker-compatible runtime. With nvm installed:
 
 ```sh
 nvm install
@@ -15,13 +15,26 @@ npm run typecheck
 
 ## Test commands
 
-| Command                      | Purpose                                    |
-| ---------------------------- | ------------------------------------------ |
-| `npm test`                   | Run both integration suites once           |
-| `npm run test:postgres`      | Run only PostgreSQL tests once             |
-| `npm run test:opensearch`    | Run only OpenSearch tests once             |
-| `npm run test:ui`            | Open interactive Vitest UI for both suites |
-| `npm run test:ui:postgres`   | Open Vitest UI for PostgreSQL              |
-| `npm run test:ui:opensearch` | Open Vitest UI for OpenSearch              |
+| Purpose | Command |
+| --- | --- |
+| Both suites | `npm test` |
+| PostgreSQL | `npm run test:postgres` |
+| OpenSearch | `npm run test:opensearch` |
+| Vitest UI | `npm run test:ui` |
+| PostgreSQL UI | `npm run test:ui:postgres` |
+| OpenSearch UI | `npm run test:ui:opensearch` |
 
-Tests will live in `test/integration/postgres/**/*.test.ts` and `test/integration/opensearch/**/*.test.ts`. The shared contract helper is imported by these suites and is not discovered as a separate test file.
+Tests run once; UI commands stay in watch mode. The shared contract helper is imported by both suites.
+
+The adapters and integration suites are not implemented yet, so test commands currently report no tests.
+
+## Optional: Colima
+
+```sh
+npm run test:colima
+npm run test:colima:postgres
+npm run test:colima:opensearch
+npm run test:colima:ui
+npm run test:colima:ui:postgres
+npm run test:colima:ui:opensearch
+```

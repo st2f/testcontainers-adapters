@@ -12,9 +12,15 @@
     "test": "vitest run",
     "test:postgres": "vitest run test/integration/postgres/",
     "test:opensearch": "vitest run test/integration/opensearch/",
-    "test:ui": "vitest --ui",
-    "test:ui:postgres": "vitest --ui test/integration/postgres/",
-    "test:ui:opensearch": "vitest --ui test/integration/opensearch/"
+    "test:ui": "vitest --ui --watch",
+    "test:ui:postgres": "vitest --ui --watch test/integration/postgres/",
+    "test:ui:opensearch": "vitest --ui --watch test/integration/opensearch/",
+    "test:colima": "DOCKER_HOST=unix://\"$HOME\"/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock npm test --",
+    "test:colima:postgres": "DOCKER_HOST=unix://\"$HOME\"/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock npm run test:postgres --",
+    "test:colima:opensearch": "DOCKER_HOST=unix://\"$HOME\"/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock npm run test:opensearch --",
+    "test:colima:ui": "DOCKER_HOST=unix://\"$HOME\"/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock npm run test:ui --",
+    "test:colima:ui:postgres": "DOCKER_HOST=unix://\"$HOME\"/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock npm run test:ui:postgres --",
+    "test:colima:ui:opensearch": "DOCKER_HOST=unix://\"$HOME\"/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock npm run test:ui:opensearch --"
   },
   "dependencies": {
     "@opensearch-project/opensearch": "^3.9.0",

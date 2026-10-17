@@ -1,10 +1,10 @@
 # Implementation steps
 
-Build the smallest working example described in [goal.md](./goal.md). Complete each step before moving on; keep this file updated as work progresses.
+Build the smallest working example described in [goal.md](./goal.md). Complete each step before moving on; keep this file updated as work progresses. Keep documentation focused on the demo; report local environment details and diagnostic logs in chat only.
 
 ## 1. Establish the project and test commands
 
-- [x] Check the available Node.js, npm, and Colima versions. Colima is the local container runtime; do not require Docker Desktop or a separate local Docker daemon. Select a supported Node.js LTS release and compatible package versions using current official documentation.
+- [x] Select a supported Node.js LTS release and compatible package versions. Check the available Docker-compatible runtime.
 - [x] Initialize a private npm package with TypeScript, strict type checking, and one consistent module format (prefer ESM). Generate the npm lockfile for inclusion with the project files.
 - [x] Add only the runtime dependencies needed by the adapters: `pg` and `@opensearch-project/opensearch`. Add TypeScript, necessary type declarations, Vitest, `@vitest/ui`, and Testcontainers packages as development dependencies.
 - [x] Use Testcontainers' PostgreSQL module. Check whether the selected Testcontainers version provides an appropriate OpenSearch module; otherwise use `GenericContainer` with explicit configuration and readiness checks.
@@ -12,17 +12,16 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 - [x] Define `typecheck`, `test`, `test:postgres`, `test:opensearch`, and Vitest UI scripts. The ordinary test scripts must terminate after one run; UI scripts should remain interactive. Provide UI commands for selecting either adapter.
 - [x] Add `.gitignore` entries for dependencies, build output, and generated test artifacts. Avoid adding a framework, bundler, linter stack, or build pipeline unless required.
 
-**Checkpoint:** verified with Node.js 24.7.0, npm 11.19.1, and Colima 0.9.1. `npm ci --offline` and `npm run typecheck` pass. Installed TypeScript 7.0.2, Vitest/UI 5.0.5, and Testcontainers/PostgreSQL/OpenSearch modules 12.2.1. Temporary file-discovery checks confirmed combined and per-adapter selection and exclusion of the contract directory; those fixtures were removed. All three run commands correctly fail with no tests present. Container connectivity and interactive UI verification remain in the subsequent steps.
+**Checkpoint:** installation, type checking, and suite selection verified.
 
-## 2. Configure and verify local Colima execution early
+## 2. Verify container execution early
 
-- [ ] Inspect the [reference project's package scripts](https://github.com/st2f/node-concurrency-patterns/blob/main/package.json) before adapting its Colima configuration. Verify the active Colima profile uses a Docker-compatible runtime and discover its socket and reachable host. Check required host overrides and resource-reaper settings; do not copy unrelated settings or disable cleanup without a demonstrated need.
-- [ ] Verify Colima is running and has sufficient CPU, memory, and disk for the planned OpenSearch container. Identify any required VM kernel settings before the OpenSearch step; document necessary setup changes explicitly.
-- [ ] Add `test:colima:postgres` and `test:colima:opensearch` now, plus Colima commands for running both suites together and opening Vitest UI. Scope the Colima environment overrides to these commands; preserve `test:postgres` and `test:opensearch` for Docker-based CI.
-- [ ] Use a tiny shared launcher only if quoting or environment discovery makes inline npm scripts hard to follow. Do not build a general container-runtime abstraction.
-- [ ] Run a small Testcontainers smoke check through the same Colima configuration before implementing either adapter: start a disposable container, verify readiness, and stop it. Verify resource-reaper connectivity and cleanup as part of this check; keep it a development check rather than adding another permanent integration suite.
+- [x] Check the runtime meets the demo and OpenSearch prerequisites. Keep resource cleanup enabled.
+- [x] Run a temporary Testcontainers smoke check for startup, connectivity, and cleanup before implementing the adapters.
+- [x] Verify Vitest UI startup.
+- [x] Provide optional Colima command wrappers for users who need them. Keep the standard commands runtime-neutral.
 
-**Checkpoint:** Testcontainers can start, reach, and clean up a real container through local Colima. Resolve runtime connectivity issues now, before writing the adapters.
+**Checkpoint:** container connectivity, cleanup, and UI startup verified.
 
 ## 3. Define the domain and persistence contract
 
@@ -53,7 +52,7 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 - [ ] In the PostgreSQL integration suite, start one pinned PostgreSQL image in `beforeAll`, create the pool from the container connection information, initialize the table, and register the shared contract.
 - [ ] Close the pool before stopping the container in `afterAll`. Make cleanup tolerate partial setup failure and ensure a pool-close error cannot skip container shutdown.
 - [ ] Add one useful PostgreSQL-specific test, such as proving the status constraint rejects an invalid stored value through direct SQL.
-- [ ] Run type checking and `npm run test:colima:postgres` against the real container immediately after implementing the suite; fix failures before starting the second adapter. Open the PostgreSQL suite in Vitest UI through the Colima configuration and verify a rerun recreates and cleans up its fixture correctly.
+- [ ] Run type checking and `npm run test:postgres` (using the optional runtime wrapper when needed) against the real container immediately after implementing the suite; fix failures before starting the second adapter. Open the PostgreSQL suite in Vitest UI and verify a rerun recreates and cleans up its fixture correctly.
 
 **Checkpoint:** the PostgreSQL suite passes independently with one container per suite and deterministic records.
 
@@ -68,25 +67,25 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 - [ ] Use real-time document GET for reads by ID, so the contract needs no sleeps or refresh polling. Do not add search behavior to the repository.
 - [ ] Add an OpenSearch-specific test that retrieves and verifies the actual index mapping.
 - [ ] Close the client before stopping the container, with the same partial-setup and cleanup guarantees as PostgreSQL.
-- [ ] Run type checking and `npm run test:colima:opensearch` immediately after implementing the suite; tune finite startup/test timeouts based on observed startup behavior rather than adding arbitrary delays. Verify this suite in Vitest UI through the Colima configuration too.
+- [ ] Run type checking and `npm run test:opensearch` (using the optional runtime wrapper when needed) immediately after implementing the suite; tune finite startup/test timeouts based on observed startup behavior rather than adding arbitrary delays. Verify this suite in Vitest UI too.
 
 **Checkpoint:** the unchanged contract passes against OpenSearch and its explicit mapping is verified.
 
 ## 7. Add GitHub Actions CI
 
-- [ ] Add `.github/workflows/ci.yml` for pull requests and pushes to the repository's default branch. Use a supported GitHub-hosted Ubuntu runner with Docker available; CI does not need Colima.
+- [ ] Add `.github/workflows/ci.yml` for pull requests and pushes to the repository's default branch. Use a supported GitHub-hosted Ubuntu runner with Docker available.
 - [ ] Use a two-entry matrix for PostgreSQL and OpenSearch so their results are visible independently. Each job checks out the repository, sets up the selected Node.js LTS version with npm caching, runs `npm ci`, runs type checking, and invokes `npm run test:postgres` or `npm run test:opensearch` as appropriate.
 - [ ] Let Testcontainers provision infrastructure inside each job. Do not add duplicate workflow service containers or fixed host-port assumptions. Check the selected runner's OpenSearch resource and kernel requirements, and configure any required runner settings explicitly.
 - [ ] Set finite job timeouts, read-only repository permissions, and matrix `fail-fast: false` so one adapter failure does not hide the other's result. Use noninteractive test commands and retain useful failure output.
-- [ ] Review the workflow and exercise both underlying commands locally through their Colima wrappers. After an authorized push or pull request triggers CI, inspect both jobs and fix any runner-specific failures. Until then, report the workflow as prepared but not verified on GitHub; local Colima success alone does not establish CI success.
+- [ ] Verify both commands locally with the available runtime. Check both CI jobs after the workflow is triggered; report any unverified CI behavior in chat.
 
-**Checkpoint:** the CI workflow runs both real-infrastructure suites independently, with dependency installation and type checking included. Record whether a GitHub run has actually been observed.
+**Checkpoint:** CI runs both suites independently and checks types.
 
 ## 8. Finish the demonstration and documentation
 
-- [ ] Run type checking and both suites together using the Colima configuration as the final regression check. The individual suites and UI should already have been verified in steps 5 and 6.
+- [ ] Run type checking and both suites together as the final regression check. The individual suites and UI should already have been verified in steps 5 and 6.
 - [ ] Confirm containers are reused across cases within each suite and stopped after runs. Check that UI reruns recreate fixtures cleanly and that independent suites do not share records or require a particular execution order.
-- [ ] Write a concise README covering local Colima prerequisites and setup, installation, all requested commands, UI use, container resource requirements, the contract semantics, and the differing persistence representations. Explain why reads by ID avoid OpenSearch refresh delays and how the GitHub Actions jobs run the same suites with Docker.
-- [ ] Include a short adapter-interchangeability example using the same application use case with either repository. Record any environmental checks that could not run and how to reproduce them.
+- [ ] Write a concise README covering setup, local and CI commands, the contract, and persistence mappings. Include only tooling prerequisites needed to run the demo.
+- [ ] Include a short example using the same application use case with either repository. Report outstanding environment checks in chat.
 
-**Completion criteria:** all four commands required by the goal are defined, both real-infrastructure suites pass locally through Colima as they are implemented, the same contract and application use cases exercise both adapters, GitHub Actions is configured for both suites with its verification status recorded, and the README makes the demo reproducible. Keep concurrency control and the later concurrent-editing exercise out of this implementation.
+**Completion criteria:** all four commands required by the goal are defined, both real-infrastructure suites pass as they are implemented, the same contract and application use cases exercise both adapters, GitHub Actions is configured for both suites, and the README makes the demo reproducible. Keep concurrency control and the later concurrent-editing exercise out of this implementation.
