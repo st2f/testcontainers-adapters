@@ -58,18 +58,18 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 ## 6. Implement and verify OpenSearch
 
-- [ ] Add an `OpenSearchArticleRepository` class implementing `ArticleRepository` in `src/adapters/outbound/opensearch/OpenSearchArticleRepository.ts`, using a constructor-injected OpenSearch client and index name. Keep index configuration and representation mapping in the OpenSearch adapter directory.
-- [ ] Create an explicit mapping: `headline` and `content` as text fields, `state` as a keyword field, and the article ID as the document `_id`. Consider strict dynamic mapping to make accidental field mismatches visible.
-- [ ] Map `{ title, content, status }` to `{ headline, content, state }` on writes and reconstruct the domain ID from document metadata on reads.
-- [ ] Use document creation and replacement/update operations with matching contract semantics. Ensure updates cannot upsert missing documents. Translate only document-not-found responses into `null` or `false`; let connection, mapping, missing-index, and other infrastructure errors fail the test.
-- [ ] In the OpenSearch suite, start one pinned OpenSearch image in `beforeAll`, configure a local single-node instance, wait for an API readiness condition, initialize the client, and create the index before running the shared contract.
-- [ ] Keep container settings explicit, including test-only security configuration and a bounded JVM heap. Use the mapped host and port; do not assume `localhost` or a fixed host port.
-- [ ] Use real-time document GET for reads by ID, so the contract needs no sleeps or refresh polling. Do not add search behavior to the repository.
-- [ ] Add an OpenSearch-specific test that retrieves and verifies the actual index mapping.
-- [ ] Close the client before stopping the container, with the same partial-setup and cleanup guarantees as PostgreSQL.
-- [ ] Run type checking and `npm run test:opensearch` (using the optional runtime wrapper when needed) immediately after implementing the suite; tune finite startup/test timeouts based on observed startup behavior rather than adding arbitrary delays. Verify this suite in Vitest UI too.
+- [x] Add an `OpenSearchArticleRepository` class implementing `ArticleRepository` in `src/adapters/outbound/opensearch/OpenSearchArticleRepository.ts`, using a constructor-injected OpenSearch client and index name. Keep index configuration and representation mapping in the OpenSearch adapter directory.
+- [x] Create an explicit mapping: `headline` and `content` as text fields, `state` as a keyword field, and the article ID as the document `_id`. Consider strict dynamic mapping to make accidental field mismatches visible.
+- [x] Map `{ title, content, status }` to `{ headline, content, state }` on writes and reconstruct the domain ID from document metadata on reads.
+- [x] Use document creation and replacement/update operations with matching contract semantics. Ensure updates cannot upsert missing documents. Translate only document-not-found responses into `null` or `false`; let connection, mapping, missing-index, and other infrastructure errors fail the test.
+- [x] In the OpenSearch suite, start one pinned OpenSearch image in `beforeAll`, configure a local single-node instance, wait for an API readiness condition, initialize the client, and create the index before running the shared contract.
+- [x] Keep container settings explicit, including test-only security configuration and a bounded JVM heap. Use the mapped host and port; do not assume `localhost` or a fixed host port.
+- [x] Use real-time document GET for reads by ID, so the contract needs no sleeps or refresh polling. Do not add search behavior to the repository.
+- [x] Add an OpenSearch-specific test that retrieves and verifies the actual index mapping.
+- [x] Close the client before stopping the container, with the same partial-setup and cleanup guarantees as PostgreSQL.
+- [x] Run type checking and `npm run test:opensearch` (using the optional runtime wrapper when needed) immediately after implementing the suite; tune finite startup/test timeouts based on observed startup behavior rather than adding arbitrary delays. Verify this suite in Vitest UI too.
 
-**Checkpoint:** the unchanged contract passes against OpenSearch and its explicit mapping is verified.
+**Checkpoint:** six OpenSearch tests pass; type checking, UI reruns, and container cleanup verified. Both suites pass together (11 tests).
 
 ## 7. Add GitHub Actions CI
 

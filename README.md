@@ -26,7 +26,7 @@ npm run typecheck
 
 Tests run once; UI commands stay in watch mode. The shared contract helper is imported by both suites.
 
-The PostgreSQL suite runs the shared repository contract and a database constraint test. The OpenSearch adapter and suite are not implemented yet.
+Both suites run the same repository contract against real containers. PostgreSQL also checks its status constraint; OpenSearch checks its mapping and missing-index errors. OpenSearch uses real-time document reads by ID, so these tests need no search refresh delays.
 
 ## Optional: Colima
 
