@@ -1,0 +1,33 @@
+{
+  "name": "testcontainers-adapters-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Integration testing interchangeable PostgreSQL and OpenSearch adapters with Testcontainers",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:postgres": "vitest run test/integration/postgres/",
+    "test:opensearch": "vitest run test/integration/opensearch/",
+    "test:ui": "vitest --ui",
+    "test:ui:postgres": "vitest --ui test/integration/postgres/",
+    "test:ui:opensearch": "vitest --ui test/integration/opensearch/"
+  },
+  "dependencies": {
+    "@opensearch-project/opensearch": "^3.9.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@testcontainers/opensearch": "^12.2.1",
+    "@testcontainers/postgresql": "^12.2.1",
+    "@types/node": "^24.19.2",
+    "@types/pg": "^8.23.1",
+    "@vitest/ui": "^5.0.5",
+    "testcontainers": "^12.2.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

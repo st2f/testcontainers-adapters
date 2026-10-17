@@ -4,15 +4,15 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 ## 1. Establish the project and test commands
 
-- [ ] Check the available Node.js, npm, and Colima versions. Colima is the local container runtime; do not require Docker Desktop or a separate local Docker daemon. Select a supported Node.js LTS release and compatible package versions using current official documentation.
-- [ ] Initialize a private npm package with TypeScript, strict type checking, and one consistent module format (prefer ESM). Commit the npm lockfile.
-- [ ] Add only the runtime dependencies needed by the adapters: `pg` and `@opensearch-project/opensearch`. Add TypeScript, necessary type declarations, Vitest, `@vitest/ui`, and Testcontainers packages as development dependencies.
-- [ ] Use Testcontainers' PostgreSQL module. Check whether the selected Testcontainers version provides an appropriate OpenSearch module; otherwise use `GenericContainer` with explicit configuration and readiness checks.
-- [ ] Configure Vitest to select the PostgreSQL and OpenSearch suites independently using explicit file paths or include patterns. Keep the shared contract helper outside test-file discovery.
-- [ ] Define `typecheck`, `test`, `test:postgres`, `test:opensearch`, and Vitest UI scripts. The ordinary test scripts must terminate after one run; UI scripts should remain interactive. Provide UI commands for selecting either adapter.
-- [ ] Add `.gitignore` entries for dependencies, build output, and generated test artifacts. Avoid adding a framework, bundler, linter stack, or build pipeline unless required.
+- [x] Check the available Node.js, npm, and Colima versions. Colima is the local container runtime; do not require Docker Desktop or a separate local Docker daemon. Select a supported Node.js LTS release and compatible package versions using current official documentation.
+- [x] Initialize a private npm package with TypeScript, strict type checking, and one consistent module format (prefer ESM). Generate the npm lockfile for inclusion with the project files.
+- [x] Add only the runtime dependencies needed by the adapters: `pg` and `@opensearch-project/opensearch`. Add TypeScript, necessary type declarations, Vitest, `@vitest/ui`, and Testcontainers packages as development dependencies.
+- [x] Use Testcontainers' PostgreSQL module. Check whether the selected Testcontainers version provides an appropriate OpenSearch module; otherwise use `GenericContainer` with explicit configuration and readiness checks.
+- [x] Configure Vitest to select the PostgreSQL and OpenSearch suites independently using explicit file paths or include patterns. Keep the shared contract helper outside test-file discovery.
+- [x] Define `typecheck`, `test`, `test:postgres`, `test:opensearch`, and Vitest UI scripts. The ordinary test scripts must terminate after one run; UI scripts should remain interactive. Provide UI commands for selecting either adapter.
+- [x] Add `.gitignore` entries for dependencies, build output, and generated test artifacts. Avoid adding a framework, bundler, linter stack, or build pipeline unless required.
 
-**Checkpoint:** dependencies install reproducibly, type checking runs, and each test command targets the intended suite.
+**Checkpoint:** verified with Node.js 24.7.0, npm 11.19.1, and Colima 0.9.1. `npm ci --offline` and `npm run typecheck` pass. Installed TypeScript 7.0.2, Vitest/UI 5.0.5, and Testcontainers/PostgreSQL/OpenSearch modules 12.2.1. Temporary file-discovery checks confirmed combined and per-adapter selection and exclusion of the contract directory; those fixtures were removed. All three run commands correctly fail with no tests present. Container connectivity and interactive UI verification remain in the subsequent steps.
 
 ## 2. Configure and verify local Colima execution early
 
