@@ -26,7 +26,7 @@ npm run typecheck
 
 Tests run once; UI commands stay in watch mode. The shared contract helper is imported by both suites.
 
-The adapters and integration suites are not implemented yet, so test commands currently report no tests.
+The PostgreSQL suite runs the shared repository contract and a database constraint test. The OpenSearch adapter and suite are not implemented yet.
 
 ## Optional: Colima
 

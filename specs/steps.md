@@ -45,16 +45,16 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 ## 5. Implement and verify PostgreSQL
 
-- [ ] Add a `PostgresArticleRepository` class implementing `ArticleRepository` in `src/adapters/outbound/postgres/PostgresArticleRepository.ts`, using a constructor-injected `pg` pool and parameterized SQL.
-- [ ] Define explicit setup DDL for an `articles` table with `article_id`, `title`, `body`, and `publication_status`. Use a text primary key, required fields, and a check constraint for the two statuses.
-- [ ] Keep database setup in a small PostgreSQL-specific helper or SQL file reused by the integration fixture. Avoid migration tooling for this single-table demo.
-- [ ] Map database rows explicitly to `Article`; use the affected row count to implement the update result.
-- [ ] In the PostgreSQL integration suite, start one pinned PostgreSQL image in `beforeAll`, create the pool from the container connection information, initialize the table, and register the shared contract.
-- [ ] Close the pool before stopping the container in `afterAll`. Make cleanup tolerate partial setup failure and ensure a pool-close error cannot skip container shutdown.
-- [ ] Add one useful PostgreSQL-specific test, such as proving the status constraint rejects an invalid stored value through direct SQL.
-- [ ] Run type checking and `npm run test:postgres` (using the optional runtime wrapper when needed) against the real container immediately after implementing the suite; fix failures before starting the second adapter. Open the PostgreSQL suite in Vitest UI and verify a rerun recreates and cleans up its fixture correctly.
+- [x] Add a `PostgresArticleRepository` class implementing `ArticleRepository` in `src/adapters/outbound/postgres/PostgresArticleRepository.ts`, using a constructor-injected `pg` pool and parameterized SQL.
+- [x] Define explicit setup DDL for an `articles` table with `article_id`, `title`, `body`, and `publication_status`. Use a text primary key, required fields, and a check constraint for the two statuses.
+- [x] Keep database setup in a small PostgreSQL-specific helper or SQL file reused by the integration fixture. Avoid migration tooling for this single-table demo.
+- [x] Map database rows explicitly to `Article`; use the affected row count to implement the update result.
+- [x] In the PostgreSQL integration suite, start one pinned PostgreSQL image in `beforeAll`, create the pool from the container connection information, initialize the table, and register the shared contract.
+- [x] Close the pool before stopping the container in `afterAll`. Make cleanup tolerate partial setup failure and ensure a pool-close error cannot skip container shutdown.
+- [x] Add one useful PostgreSQL-specific test, such as proving the status constraint rejects an invalid stored value through direct SQL.
+- [x] Run type checking and `npm run test:postgres` (using the optional runtime wrapper when needed) against the real container immediately after implementing the suite; fix failures before starting the second adapter. Open the PostgreSQL suite in Vitest UI and verify a rerun recreates and cleans up its fixture correctly.
 
-**Checkpoint:** the PostgreSQL suite passes independently with one container per suite and deterministic records.
+**Checkpoint:** five PostgreSQL tests pass; type checking, UI reruns, and container cleanup verified.
 
 ## 6. Implement and verify OpenSearch
 
