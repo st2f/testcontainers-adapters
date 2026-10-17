@@ -78,15 +78,17 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 - [x] Let Testcontainers provision infrastructure inside each job. Do not add duplicate workflow service containers or fixed host-port assumptions. Check the selected runner's OpenSearch resource and kernel requirements, and configure any required runner settings explicitly.
 - [x] Set finite job timeouts, read-only repository permissions, and matrix `fail-fast: false` so one adapter failure does not hide the other's result. Use noninteractive test commands and retain useful failure output.
 - [x] Verify both commands locally with the available runtime.
-- [ ] Check both CI jobs after the workflow is triggered.
+- [x] Check both CI jobs after the workflow is triggered.
 
-**Checkpoint:** workflow validation and local checks pass; GitHub execution pending.
+**Checkpoint:** workflow validation, local checks, and both CI jobs pass.
 
 ## 8. Finish the demonstration and documentation
 
-- [ ] Run type checking and both suites together as the final regression check. The individual suites and UI should already have been verified in steps 5 and 6.
-- [ ] Confirm containers are reused across cases within each suite and stopped after runs. Check that UI reruns recreate fixtures cleanly and that independent suites do not share records or require a particular execution order.
-- [ ] Write a concise README covering setup, local and CI commands, the contract, and persistence mappings. Include only tooling prerequisites needed to run the demo.
-- [ ] Include a short example using the same application use case with either repository. Report outstanding environment checks in chat.
+- [x] Run type checking and both suites together as the final regression check. The individual suites and UI should already have been verified in steps 5 and 6.
+- [x] Confirm containers are reused across cases within each suite and stopped after runs. Check that UI reruns recreate fixtures cleanly and that independent suites do not share records or require a particular execution order.
+- [x] Write a concise README covering setup, local and CI commands, the contract, and persistence mappings. Include only tooling prerequisites needed to run the demo.
+- [x] Include a short example using the same application use case with either repository. Report outstanding environment checks in chat.
+
+**Checkpoint:** documentation complete; type checking and all 11 integration tests pass. Cleanup verified.
 
 **Completion criteria:** all four commands required by the goal are defined, both real-infrastructure suites pass as they are implemented, the same contract and application use cases exercise both adapters, GitHub Actions is configured for both suites, and the README makes the demo reproducible. Keep concurrency control and the later concurrent-editing exercise out of this implementation.
