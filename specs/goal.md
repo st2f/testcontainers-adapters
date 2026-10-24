@@ -151,3 +151,31 @@ Naming: When a file is centered on a single named domain or architectural type (
 The resulting project should make it easy to understand that the application depends on an `ArticleRepository` contract while PostgreSQL and OpenSearch are replaceable implementations of that contract.
 
 A later exercise may introduce concurrent article editing and compare the guarantees provided by PostgreSQL and OpenSearch. Do not design or implement that exercise yet.
+
+## Add-on 1
+
+Use aggregate such as :
+
+```text
+Article
+├── id
+├── title
+├── image
+│   ├── url
+│   ├── alt
+│   ├── width
+│   └── height
+│
+└── sections[]
+    ├── Section
+    │   ├── id
+    │   ├── title
+    │   └── content
+    │
+    └── Section
+        └── ...
+```
+
+## Add-on 2
+
+Use MikroORM for Postgres

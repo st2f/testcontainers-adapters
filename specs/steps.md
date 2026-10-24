@@ -91,4 +91,57 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 **Checkpoint:** documentation complete; type checking and all 11 integration tests pass. Cleanup verified.
 
-**Completion criteria:** all four commands required by the goal are defined, both real-infrastructure suites pass as they are implemented, the same contract and application use cases exercise both adapters, GitHub Actions is configured for both suites, and the README makes the demo reproducible. Keep concurrency control and the later concurrent-editing exercise out of this implementation.
+**Original demo completion criteria:** all four commands required by the goal are defined, both real-infrastructure suites pass as they are implemented, the same contract and application use cases exercise both adapters, GitHub Actions is configured for both suites, and the README makes the demo reproducible. Keep concurrency control and the later concurrent-editing exercise out of this implementation.
+
+## Add-ons: aggregates and atomic persistence
+
+Steps 1–8 record the completed flat-model demo. Extend it in the following three steps, with one commit per step. Each implementation commit includes its tests and must pass before proceeding.
+
+The main concepts to demonstrate are the aggregate boundary and atomic persistence. Use relational tables for PostgreSQL and one document per article for OpenSearch. Keep concurrency control for a later exercise.
+
+## 9. Introduce MikroORM for the existing PostgreSQL model
+
+- [ ] Select compatible MikroORM packages and configure them explicitly inside the PostgreSQL adapter. Update dependencies and the lockfile; remove direct `pg` dependencies only if no longer used directly.
+- [ ] Keep the current flat `Article` shape for this step. Introduce a PostgreSQL persistence entity and explicit mapping to and from the domain object, preserving the existing column names and status constraint.
+- [ ] Replace direct SQL in `PostgresArticleRepository` with MikroORM while preserving the repository contract, including update returning `false` without inserting a missing article.
+- [ ] Keep ORM entities, configuration, and entity-manager lifecycle inside the PostgreSQL adapter and its fixture. Domain and application code must have no ORM dependencies. Use an isolated entity manager for each repository operation so unrelated operations do not share pending changes or cached entities.
+- [ ] Adapt the Testcontainers fixture to initialize MikroORM and create the schema for its disposable database. Keep schema setup explicit and small; do not introduce a production migration workflow for this demo.
+- [ ] Preserve the PostgreSQL constraint test and cleanup guarantees: close the ORM before stopping the container, including when setup or cleanup fails.
+- [ ] Run type checking and both integration suites against real containers to establish that the ORM migration preserves behavior.
+
+**Checkpoint:** the flat-model demo passes with MikroORM behind the PostgreSQL adapter and the same application contract.
+
+**Commit:** `refactor: use MikroORM for PostgreSQL persistence`
+
+## 10. Persist article aggregates atomically
+
+- [ ] Change `Article` to contain `id`, `title`, `status`, a required `image` (`url`, `alt`, `width`, `height`), and an ordered `sections` array. Each section contains `id`, `title`, and `content`. Move article-level content into sections and remove the article-level `content` field.
+- [ ] Keep domain models as plain TypeScript data. Treat `Article` as the aggregate root: sections belong to an article and are read and written only through `ArticleRepository`. Do not introduce separate image or section repositories.
+- [ ] Preserve the repository signatures and use cases. Document that create and update persist the complete aggregate, with update replacing its editable state while preserving the article ID. Keep section IDs caller-supplied and preserve array order on round trips.
+- [ ] In PostgreSQL, store article fields and image columns in `articles`; store sections in `article_sections` with an article foreign key and explicit position. Define relational constraints and deterministic ordering. Do not use JSONB for aggregate storage.
+- [ ] Map the relational representation through MikroORM entities kept inside the adapter. Ensure section edits, additions, removals, and reordering persist correctly, including removal of sections no longer present in the aggregate.
+- [ ] Persist each PostgreSQL create or update in one transaction covering the article and all its sections. A failed write must leave no partial changes. Keep the missing-update behavior and allow infrastructure errors to propagate.
+- [ ] In OpenSearch, persist the whole aggregate in one document using one document write per create or update. Extend the explicit image and section mappings, retain the distinct persistence field names where appropriate, and preserve section array order. Keep reads by ID real-time and updates unable to upsert missing documents.
+- [ ] Extend shared contract tests to assert full aggregate equality after create and update. Cover image changes, section edits, additions, removals, reordering, and an empty section array. Preserve missing-ID and missing-update coverage and exercise the same application use cases with both adapters.
+- [ ] Add PostgreSQL-specific integration tests that cause a real section write to fail during create and update. Verify from fresh database reads that a failed create leaves no article or sections and a failed update preserves all previously stored article and section data. Do not rely on the ORM identity map or mock the failure.
+- [ ] Extend OpenSearch-specific tests to verify the actual aggregate mapping and that a rejected document replacement leaves the previously stored aggregate intact.
+- [ ] Run type checking and both suites against real containers. Verify rollback tests are deterministic and that section order survives reloads.
+
+**Checkpoint:** both adapters persist complete aggregates; relational writes roll back together and OpenSearch replaces a single document atomically. All contract and technology-specific tests pass.
+
+**Commit:** `feat: persist article aggregates atomically`
+
+## 11. Document and verify the aggregate demo
+
+- [ ] Update `goal.md` to consolidate the agreed aggregate shape and MikroORM requirement into the main specification, replacing superseded flat-model examples and direct-SQL guidance.
+- [ ] Update the README's model, persistence mapping, project structure, and use-case example to show an article with an image and multiple sections, including MikroORM initialization where needed.
+- [ ] Explain the aggregate boundary: article and sections are saved together through one repository operation, with a PostgreSQL transaction across relational tables and a single OpenSearch document write.
+- [ ] Explain the rollback demonstration and distinguish atomic persistence from protection against concurrent overwrites. Leave version fields, locking strategies, conflict handling, and concurrent-editing tests for the later exercise.
+- [ ] Run type checking and both integration suites as the final regression check. Verify both adapters in Vitest UI, including reruns and container cleanup. Keep the existing runtime-neutral and Colima commands working.
+- [ ] Update this checklist with verified outcomes; keep local diagnostics in chat.
+
+**Checkpoint:** documentation matches the implementation; both adapters, UI reruns, and cleanup are verified.
+
+**Commit:** `docs: explain aggregate boundaries and atomic persistence`
+
+**Add-on completion criteria:** the domain and application remain independent of MikroORM; PostgreSQL uses relational aggregate storage; both adapters pass the shared aggregate contract; real-infrastructure tests demonstrate atomic persistence and rollback behavior; documentation explains the guarantees without introducing concurrency control.
