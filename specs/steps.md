@@ -45,7 +45,7 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 ## 5. Implement and verify PostgreSQL
 
-- [x] Add a `MikroOrmArticleRepository` class implementing `ArticleRepository` in `src/adapters/outbound/postgres/MikroOrmArticleRepository.ts`, using a constructor-injected `pg` pool and parameterized SQL.
+- [x] Add the original PostgreSQL adapter implementing `ArticleRepository`, using a constructor-injected `pg` pool and parameterized SQL. Step 9 replaces this implementation with MikroORM.
 - [x] Define explicit setup DDL for an `articles` table with `article_id`, `title`, `body`, and `publication_status`. Use a text primary key, required fields, and a check constraint for the two statuses.
 - [x] Keep database setup in a small PostgreSQL-specific helper or SQL file reused by the integration fixture. Avoid migration tooling for this single-table demo.
 - [x] Map database rows explicitly to `Article`; use the affected row count to implement the update result.
@@ -133,14 +133,14 @@ The main concepts to demonstrate are the aggregate boundary and atomic persisten
 
 ## 11. Document and verify the aggregate demo
 
-- [ ] Update `goal.md` to consolidate the agreed aggregate shape and MikroORM requirement into the main specification, replacing superseded flat-model examples and direct-SQL guidance.
-- [ ] Update the README's model, persistence mapping, project structure, and use-case example to show an article with an image and multiple sections, including MikroORM initialization where needed.
-- [ ] Explain the aggregate boundary: article and sections are saved together through one repository operation, with a PostgreSQL transaction across relational tables and a single OpenSearch document write.
-- [ ] Explain the rollback demonstration and distinguish atomic persistence from protection against concurrent overwrites. Leave version fields, locking strategies, conflict handling, and concurrent-editing tests for the later exercise.
-- [ ] Run type checking and both integration suites as the final regression check. Verify both adapters in Vitest UI, including reruns and container cleanup. Keep the existing runtime-neutral and Colima commands working.
-- [ ] Update this checklist with verified outcomes; keep local diagnostics in chat.
+- [x] Update `goal.md` to consolidate the agreed aggregate shape and MikroORM requirement into the main specification, replacing superseded flat-model examples and direct-SQL guidance.
+- [x] Update the README's model, persistence mapping, project structure, and use-case example to show an article with an image and multiple sections, including MikroORM initialization where needed.
+- [x] Explain the aggregate boundary: article and sections are saved together through one repository operation, with a PostgreSQL transaction across relational tables and a single OpenSearch document write.
+- [x] Explain the rollback demonstration and distinguish atomic persistence from protection against concurrent overwrites. Leave version fields, locking strategies, conflict handling, and concurrent-editing tests for the later exercise.
+- [x] Run type checking and both integration suites as the final regression check. Verify the Vitest UI page and JavaScript are served, rerun both adapters through its WebSocket API, and confirm container cleanup. Keep the existing runtime-neutral and Colima commands working.
+- [x] Update this checklist with verified outcomes; keep local diagnostics in chat.
 
-**Checkpoint:** documentation matches the implementation; both adapters, UI reruns, and cleanup are verified.
+**Checkpoint:** documentation matches the implementation. Type checking and all 22 integration tests pass; Vitest UI assets and individual suite reruns through its API are verified, with no unhandled errors or leftover test containers.
 
 **Commit:** `docs: explain aggregate boundaries and atomic persistence`
 

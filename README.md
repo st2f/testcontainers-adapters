@@ -2,17 +2,15 @@
 
 # Testcontainers adapters demo
 
-A small Node.js + TypeScript demo of interchangeable PostgreSQL and OpenSearch persistence adapters. Shared contract tests exercise the same application behavior against real, disposable infrastructure started by Testcontainers.
+A small Node.js + TypeScript demo of testing interchangeable persistence adapters against real infrastructure with Testcontainers. PostgreSQL and OpenSearch implement the same repository contract and are exercised by a shared integration test suite using disposable containers.
+
+The demo uses an Article domain model to explore how the same application contract can map naturally to different persistence models. PostgreSQL uses MikroORM with relational sections and a JSONB value object, while OpenSearch stores the complete article as a document. The example also exercises aggregate persistence, transactions, rollback, and adapter-specific failure behavior.
 
 ## Repository contract
 
-The application depends on `ArticleRepository`:
+The application depends on `ArticleRepository`, which creates, reads, and updates complete `Article` aggregates. Both adapters preserve the same observable behavior through a shared integration test contract.
 
-- `create(article)` stores an article with its caller-supplied ID.
-- `findById(id)` returns the article or `null`.
-- `update(article)` replaces its editable fields, preserving the ID. It returns `true` if the article existed, or `false` without creating it if missing.
-
-Each adapter maps the same domain data to its own persistence representation:
+`Article` is the aggregate root: sections and the image are persisted through the same repository, with no separate repositories for them.
 
 | Article field        | PostgreSQL                    | OpenSearch            |
 | -------------------- | ----------------------------- | --------------------- |
@@ -24,6 +22,16 @@ Each adapter maps the same domain data to its own persistence representation:
 | `sections[].title`   | `article_sections.title`      | `sections[].headline` |
 | `sections[].content` | `article_sections.body`       | `sections[].content`  |
 | Section order        | `article_sections.position`   | Array order           |
+
+## Atomic persistence
+
+PostgreSQL maps the aggregate to `ArticleEntity` and `SectionEntity`. MikroORM's Unit of Work persists changes to the article and its sections inside a transaction, so a failed write rolls back the complete change.
+
+OpenSearch stores the complete aggregate as one document and replaces it atomically on update. A failed replacement leaves the previous document intact.
+
+These guarantees prevent partial saves. They do not prevent concurrent updates from overwriting each other.
+
+## Application example
 
 The same use case accepts either adapter. With an initialized PostgreSQL MikroORM instance `orm`, OpenSearch `client`, and their table/index:
 
@@ -45,7 +53,11 @@ function createDraft(repository: ArticleRepository): Promise<void> {
     },
     sections: [
       { id: "intro", title: "Introduction", content: "An article aggregate." },
-      { id: "body", title: "Body", content: "The application uses the same repository contract." },
+      {
+        id: "body",
+        title: "Body",
+        content: "The application uses the same repository contract.",
+      },
     ],
   });
 }
@@ -56,7 +68,7 @@ await createDraft(new OpenSearchArticleRepository(client, "articles"));
 
 ## Project structure
 
-The application depends on the repository port; each persistence implementation lives in its own outbound adapter. Both adapter implementations are exercised by the same integration-test contract.
+The application depends on the repository port; each persistence implementation lives in its own outbound adapter. Both adapter implementations are exercised by the same [integration-test contract](test/integration/contract/article-repository.contract.ts).
 
 ```txt
 src/
@@ -76,17 +88,23 @@ src/
         │   ├── SectionEntity.ts
         │   └── orm-config.ts
         └── opensearch/
-            └── OpenSearchArticleRepository.ts
+            ├── OpenSearchArticleRepository.ts
+            └── index-setup.ts
 
 test/
 └── integration/
     ├── contract/
+    │   ├── article-fixture.ts
     │   └── article-repository.contract.ts
     ├── postgres/
-    │   └── ...
+    │   └── MikroOrmArticleRepository.test.ts
     └── opensearch/
-        └── ...
+        └── OpenSearchArticleRepository.test.ts
 ```
+
+Each integration fixture starts its database with Testcontainers, initializes the required schema or index, runs the shared repository contract, then closes the client and container.
+
+Domain and application code have no MikroORM or OpenSearch client dependencies.
 
 ## Setup
 
@@ -110,34 +128,28 @@ npm run typecheck
 | PostgreSQL UI | `npm run test:ui:postgres`   |
 | OpenSearch UI | `npm run test:ui:opensearch` |
 
-Tests run once; UI commands stay in watch mode. The shared contract helper is imported by both suites.
-
-Both suites run the same repository contract against real containers. PostgreSQL also checks its status constraint; OpenSearch checks its mapping and missing-index errors. OpenSearch uses real-time document reads by ID, so these tests need no search refresh delays.
-
-The PostgreSQL fixture initializes MikroORM with `postgresOrmConfig(container.getConnectionUri())` and creates the disposable schema from explicit entity metadata. Each repository operation forks its own entity manager to isolate cached entities and pending writes. Domain and application code remain independent of the ORM.
+For Colima, use the matching wrappers, eg `npm run test:colima`, `npm run test:colima:ui`.
 
 The [CI workflow](.github/workflows/ci.yml) checks types and runs each adapter suite independently on pull requests and pushes to `main`.
-
-See optional colima commands in [/package.json](/package.json)
 
 ## Tests execution
 
 ### Vitest UI and module graph dependencies
 
-OpenSearch <img width="2512" height="1352" alt="image" src="https://github.com/user-attachments/assets/3a2ea9ea-71a4-4bf5-83d9-afda7ea7aade" />
+OpenSearch <img width="2446" height="1242" alt="image" src="https://github.com/user-attachments/assets/e8a8f43e-6487-4460-8ed9-1ebd9e6c257b" />
 
-Postgres <img width="2492" height="1384" alt="image" src="https://github.com/user-attachments/assets/a82beeca-8a52-4508-b04a-128a78744ea9" />
+Postgres <img width="2492" height="1314" alt="image" src="https://github.com/user-attachments/assets/04ff5ee1-23be-4f17-a9e4-c85568f3f475" />
 
 ### CI
 
-<img width="800" src="https://github.com/user-attachments/assets/ffe7d125-3148-40e9-9f37-65d377f6964d" />
+<img width="800" src="https://github.com/user-attachments/assets/2e585873-7d34-4b3d-9ee0-6d4a4d45fc1b" />
 
 ### Comparison
 
 | Adapter    | Local suite (Vitest) | CI test step | Full CI job |
 | ---------- | -------------------: | -----------: | ----------: |
-| PostgreSQL |               2.17 s |         12 s |        47 s |
-| OpenSearch |               8.92 s |         41 s |   1 min 3 s |
+| PostgreSQL |               2.33 s |          8 s |        33 s |
+| OpenSearch |               9.34 s |         51 s |  1 min 30 s |
 
 Sample timings from a local run and CI. Suite times include container startup and cleanup; full CI jobs also include setup and dependency installation. Timings vary with image caching and runner resources.
 
