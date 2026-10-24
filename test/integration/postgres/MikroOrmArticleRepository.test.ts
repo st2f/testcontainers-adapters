@@ -21,7 +21,7 @@ describe("MikroOrmArticleRepository", () => {
     orm = new MikroORM(postgresOrmConfig(container.getConnectionUri()));
     await orm.schema.create();
     // A test-only constraint injects a genuine database failure during section writes.
-    await orm.em.fork().execute(`ALTER TABLE article_sections
+    await orm.em.fork().execute(`ALTER TABLE sections
       ADD CONSTRAINT integration_test_rejected_body
       CHECK (body <> '__reject_section_write__')`);
     repository = new MikroOrmArticleRepository(orm.em);
@@ -42,7 +42,7 @@ describe("MikroOrmArticleRepository", () => {
     return {
       articles: await em.execute("SELECT * FROM articles WHERE article_id = ?", [id]),
       sections: await em.execute(
-        "SELECT * FROM article_sections WHERE article_id = ? ORDER BY position", [id],
+        "SELECT * FROM sections WHERE article_id = ? ORDER BY position", [id],
       ),
     };
   }

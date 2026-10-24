@@ -37,10 +37,10 @@ Deliberately use different persistence representations:
 | `title`              | `articles.title`              | `headline`            |
 | `status`             | `articles.publication_status` | `state`               |
 | `image`              | `articles.image` (JSONB)       | `image` object        |
-| `sections[].id`      | `article_sections.section_id` | `sections[].id`       |
-| `sections[].title`   | `article_sections.title`      | `sections[].headline` |
-| `sections[].content` | `article_sections.body`       | `sections[].content`  |
-| Section order        | `article_sections.position`   | Array order           |
+| `sections[].id`      | `sections.section_id` | `sections[].id`       |
+| `sections[].title`   | `sections.title`      | `sections[].headline` |
+| `sections[].content` | `sections.body`       | `sections[].content`  |
+| Section order        | `sections.position`   | Array order           |
 
 No framework, HTTP API, authentication, events, or application UI is needed. Use MikroORM inside the PostgreSQL adapter and Vitest UI for the demonstration.
 
@@ -71,7 +71,7 @@ ArticleRepository
 - Use a real PostgreSQL instance started by Testcontainers.
 - Use MikroORM with explicit entity metadata, managed relationships, cascade persistence, orphan removal, and Unit of Work flushing.
 - Keep `ArticleEntity`, `SectionEntity`, ORM configuration, and representation mapping inside `adapters/outbound/postgres`. Domain and application code must have no ORM dependencies.
-- Store article fields and the image JSONB value in `articles`. Store sections in `article_sections`, with an article foreign key, a composite primary key of article ID and section ID, and an explicit position.
+- Store article fields and the image JSONB value in `articles`. Store sections in `sections`, with an article foreign key, a composite primary key of article ID and section ID, and an explicit position.
 - Preserve the status check constraint and deterministic section ordering. Section edits, additions, removals, and reordering must persist correctly.
 - Use an isolated entity manager per repository operation. Create and update must run in a transaction covering the article and all its sections, so a section write failure leaves no partial changes.
 - Create the disposable schema from entity metadata in the integration fixture. Keep production migrations outside this demo.

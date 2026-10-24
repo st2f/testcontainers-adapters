@@ -18,10 +18,10 @@ The application depends on `ArticleRepository`, which creates, reads, and update
 | `title`              | `articles.title`              | `headline`            |
 | `status`             | `articles.publication_status` | `state`               |
 | `image`              | `articles.image` (JSONB)      | `image` object        |
-| `sections[].id`      | `article_sections.section_id` | `sections[].id`       |
-| `sections[].title`   | `article_sections.title`      | `sections[].headline` |
-| `sections[].content` | `article_sections.body`       | `sections[].content`  |
-| Section order        | `article_sections.position`   | Array order           |
+| `sections[].id`      | `sections.section_id` | `sections[].id`       |
+| `sections[].title`   | `sections.title`      | `sections[].headline` |
+| `sections[].content` | `sections.body`       | `sections[].content`  |
+| Section order        | `sections.position`   | Array order           |
 
 ## Atomic persistence
 

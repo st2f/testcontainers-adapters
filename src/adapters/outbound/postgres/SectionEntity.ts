@@ -13,7 +13,7 @@ export class SectionEntity {
 // A class with an explicit schema keeps the bidirectional relation's types simple.
 export const sectionSchema = new EntitySchema<SectionEntity>({
   class: SectionEntity,
-  tableName: "article_sections",
+  tableName: "sections",
   properties: {
     article: {
       kind: "m:1",
@@ -29,6 +29,6 @@ export const sectionSchema = new EntitySchema<SectionEntity>({
     position: { type: "integer" },
   },
   checks: [
-    { name: "article_sections_position_check", expression: "position >= 0" },
+    { name: "sections_position_check", expression: "position >= 0" },
   ],
 });
