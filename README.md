@@ -21,7 +21,7 @@ Each adapter maps the same domain data to its own persistence representation:
 | `content`     | `body`               | `content`  |
 | `status`      | `publication_status` | `state`    |
 
-The same use case accepts either adapter. With an initialized PostgreSQL `pool`, OpenSearch `client`, and their table/index:
+The same use case accepts either adapter. With an initialized PostgreSQL MikroORM instance `orm`, OpenSearch `client`, and their table/index:
 
 ```ts
 import { randomUUID } from "node:crypto";
@@ -39,7 +39,7 @@ function createDraft(repository: ArticleRepository): Promise<void> {
   });
 }
 
-await createDraft(new PostgresArticleRepository(pool));
+await createDraft(new PostgresArticleRepository(orm.em));
 await createDraft(new OpenSearchArticleRepository(client, "articles"));
 ```
 
@@ -60,7 +60,9 @@ src/
 └── adapters/
     └── outbound/
         ├── postgres/
-        │   └── PostgresArticleRepository.ts
+        │   ├── PostgresArticleEntity.ts
+        │   ├── PostgresArticleRepository.ts
+        │   └── orm-config.ts
         └── opensearch/
             └── OpenSearchArticleRepository.ts
 
@@ -99,6 +101,8 @@ npm run typecheck
 Tests run once; UI commands stay in watch mode. The shared contract helper is imported by both suites.
 
 Both suites run the same repository contract against real containers. PostgreSQL also checks its status constraint; OpenSearch checks its mapping and missing-index errors. OpenSearch uses real-time document reads by ID, so these tests need no search refresh delays.
+
+The PostgreSQL fixture initializes MikroORM with `postgresOrmConfig(container.getConnectionUri())` and creates the disposable schema from explicit entity metadata. Each repository operation forks its own entity manager to isolate cached entities and pending writes. Domain and application code remain independent of the ORM.
 
 The [CI workflow](.github/workflows/ci.yml) checks types and runs each adapter suite independently on pull requests and pushes to `main`.
 

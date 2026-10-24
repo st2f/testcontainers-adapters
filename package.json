@@ -23,14 +23,14 @@
     "test:colima:ui:opensearch": "DOCKER_HOST=unix://\"$HOME\"/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock npm run test:ui:opensearch --"
   },
   "dependencies": {
-    "@opensearch-project/opensearch": "^3.9.0",
-    "pg": "^8.23.1"
+    "@mikro-orm/core": "^7.2.5",
+    "@mikro-orm/postgresql": "^7.2.5",
+    "@opensearch-project/opensearch": "^3.9.0"
   },
   "devDependencies": {
     "@testcontainers/opensearch": "^12.2.1",
     "@testcontainers/postgresql": "^12.2.1",
     "@types/node": "^24.19.2",
-    "@types/pg": "^8.23.1",
     "@vitest/ui": "^5.0.5",
     "testcontainers": "^12.2.1",
     "typescript": "^7.0.2",

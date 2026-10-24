@@ -101,15 +101,15 @@ The main concepts to demonstrate are the aggregate boundary and atomic persisten
 
 ## 9. Introduce MikroORM for the existing PostgreSQL model
 
-- [ ] Select compatible MikroORM packages and configure them explicitly inside the PostgreSQL adapter. Update dependencies and the lockfile; remove direct `pg` dependencies only if no longer used directly.
-- [ ] Keep the current flat `Article` shape for this step. Introduce a PostgreSQL persistence entity and explicit mapping to and from the domain object, preserving the existing column names and status constraint.
-- [ ] Replace direct SQL in `PostgresArticleRepository` with MikroORM while preserving the repository contract, including update returning `false` without inserting a missing article.
-- [ ] Keep ORM entities, configuration, and entity-manager lifecycle inside the PostgreSQL adapter and its fixture. Domain and application code must have no ORM dependencies. Use an isolated entity manager for each repository operation so unrelated operations do not share pending changes or cached entities.
-- [ ] Adapt the Testcontainers fixture to initialize MikroORM and create the schema for its disposable database. Keep schema setup explicit and small; do not introduce a production migration workflow for this demo.
-- [ ] Preserve the PostgreSQL constraint test and cleanup guarantees: close the ORM before stopping the container, including when setup or cleanup fails.
-- [ ] Run type checking and both integration suites against real containers to establish that the ORM migration preserves behavior.
+- [x] Select compatible MikroORM packages and configure them explicitly inside the PostgreSQL adapter. Update dependencies and the lockfile; remove direct `pg` dependencies only if no longer used directly.
+- [x] Keep the current flat `Article` shape for this step. Introduce a PostgreSQL persistence entity and explicit mapping to and from the domain object, preserving the existing column names and status constraint.
+- [x] Replace direct SQL in `PostgresArticleRepository` with MikroORM while preserving the repository contract, including update returning `false` without inserting a missing article.
+- [x] Keep ORM entities, configuration, and entity-manager lifecycle inside the PostgreSQL adapter and its fixture. Domain and application code must have no ORM dependencies. Use an isolated entity manager for each repository operation so unrelated operations do not share pending changes or cached entities.
+- [x] Adapt the Testcontainers fixture to initialize MikroORM and create the schema for its disposable database. Keep schema setup explicit and small; do not introduce a production migration workflow for this demo.
+- [x] Preserve the PostgreSQL constraint test and cleanup guarantees: close the ORM before stopping the container, including when setup or cleanup fails.
+- [x] Run type checking and both integration suites against real containers to establish that the ORM migration preserves behavior.
 
-**Checkpoint:** the flat-model demo passes with MikroORM behind the PostgreSQL adapter and the same application contract.
+**Checkpoint:** the flat-model demo passes with MikroORM behind the PostgreSQL adapter and the same application contract. Type checking and all 13 integration tests pass (seven PostgreSQL, six OpenSearch), including fresh-read and failed-write isolation checks.
 
 **Commit:** `refactor: use MikroORM for PostgreSQL persistence`
 
