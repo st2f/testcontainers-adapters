@@ -14,12 +14,16 @@ The application depends on `ArticleRepository`:
 
 Each adapter maps the same domain data to its own persistence representation:
 
-| Article field | PostgreSQL           | OpenSearch |
-| ------------- | -------------------- | ---------- |
-| `id`          | `article_id`         | `_id`      |
-| `title`       | `title`              | `headline` |
-| `content`     | `body`               | `content`  |
-| `status`      | `publication_status` | `state`    |
+| Article field        | PostgreSQL                    | OpenSearch            |
+| -------------------- | ----------------------------- | --------------------- |
+| `id`                 | `articles.article_id`         | `_id`                 |
+| `title`              | `articles.title`              | `headline`            |
+| `status`             | `articles.publication_status` | `state`               |
+| `image`              | `articles.image` (JSONB)      | `image` object        |
+| `sections[].id`      | `article_sections.section_id` | `sections[].id`       |
+| `sections[].title`   | `article_sections.title`      | `sections[].headline` |
+| `sections[].content` | `article_sections.body`       | `sections[].content`  |
+| Section order        | `article_sections.position`   | Array order           |
 
 The same use case accepts either adapter. With an initialized PostgreSQL MikroORM instance `orm`, OpenSearch `client`, and their table/index:
 
@@ -27,19 +31,26 @@ The same use case accepts either adapter. With an initialized PostgreSQL MikroOR
 import { randomUUID } from "node:crypto";
 import type { ArticleRepository } from "./src/application/ports/ArticleRepository.js";
 import { CreateArticle } from "./src/application/use-cases/CreateArticle.js";
-import { PostgresArticleRepository } from "./src/adapters/outbound/postgres/PostgresArticleRepository.js";
+import { MikroOrmArticleRepository } from "./src/adapters/outbound/postgres/MikroOrmArticleRepository.js";
 import { OpenSearchArticleRepository } from "./src/adapters/outbound/opensearch/OpenSearchArticleRepository.js";
 
 function createDraft(repository: ArticleRepository): Promise<void> {
   return new CreateArticle(repository).execute({
     id: randomUUID(),
     title: "Example article",
-    content: "The application uses the same repository contract.",
     status: "draft",
+    image: {
+      url: "https://example.com/article.jpg",
+      alt: "Example image",
+    },
+    sections: [
+      { id: "intro", title: "Introduction", content: "An article aggregate." },
+      { id: "body", title: "Body", content: "The application uses the same repository contract." },
+    ],
   });
 }
 
-await createDraft(new PostgresArticleRepository(orm.em));
+await createDraft(new MikroOrmArticleRepository(orm.em));
 await createDraft(new OpenSearchArticleRepository(client, "articles"));
 ```
 
@@ -60,8 +71,9 @@ src/
 └── adapters/
     └── outbound/
         ├── postgres/
-        │   ├── PostgresArticleEntity.ts
-        │   ├── PostgresArticleRepository.ts
+        │   ├── ArticleEntity.ts
+        │   ├── MikroOrmArticleRepository.ts
+        │   ├── SectionEntity.ts
         │   └── orm-config.ts
         └── opensearch/
             └── OpenSearchArticleRepository.ts

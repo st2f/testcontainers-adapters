@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { OpenSearchArticleRepository } from "../../../src/adapters/outbound/opensearch/OpenSearchArticleRepository.js";
 import { createArticleIndex } from "../../../src/adapters/outbound/opensearch/index-setup.js";
 import { articleRepositoryContract } from "../contract/article-repository.contract.js";
+import { draftArticle } from "../contract/article-fixture.js";
 
 describe("OpenSearchArticleRepository", () => {
   const index = "articles";
@@ -46,8 +47,20 @@ describe("OpenSearchArticleRepository", () => {
       dynamic: "strict",
       properties: {
         headline: { type: "text" },
-        content: { type: "text" },
         state: { type: "keyword" },
+        image: {
+          properties: {
+            url: { type: "keyword" },
+            alt: { type: "text" },
+          },
+        },
+        sections: {
+          properties: {
+            id: { type: "keyword" },
+            headline: { type: "text" },
+            content: { type: "text" },
+          },
+        },
       },
     });
   });
@@ -57,12 +70,7 @@ describe("OpenSearchArticleRepository", () => {
       client,
       `missing-${randomUUID()}`,
     );
-    const article = {
-      id: randomUUID(),
-      title: "Draft title",
-      content: "Draft content",
-      status: "draft" as const,
-    };
+    const article = draftArticle();
     const missingIndexError = {
       statusCode: 404,
       body: { error: { type: "index_not_found_exception" } },
@@ -74,5 +82,26 @@ describe("OpenSearchArticleRepository", () => {
     await expect(missingIndexRepository.update(article)).rejects.toMatchObject(
       missingIndexError,
     );
+  });
+
+  test("preserves the complete stored aggregate when a replacement violates the mapping", async () => {
+    const article = draftArticle();
+    await repository.create(article);
+    const before = await client.get({ index, id: article.id, realtime: true });
+
+    await expect(repository.update({
+      ...article,
+      title: "Rejected replacement",
+      status: "published",
+      image: { ...article.image, alt: { invalid: true } as unknown as string },
+      sections: [],
+    })).rejects.toMatchObject({
+      statusCode: 400,
+      body: { error: { type: "mapper_parsing_exception" } },
+    });
+
+    const after = await client.get({ index, id: article.id, realtime: true });
+    expect(after.body._source).toEqual(before.body._source);
+    await expect(repository.findById(article.id)).resolves.toEqual(article);
   });
 });

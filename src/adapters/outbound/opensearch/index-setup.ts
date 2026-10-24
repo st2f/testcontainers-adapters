@@ -15,8 +15,22 @@ export async function createArticleIndex(
         dynamic: "strict",
         properties: {
           headline: { type: "text" },
-          content: { type: "text" },
           state: { type: "keyword" },
+          image: {
+            type: "object",
+            properties: {
+              url: { type: "keyword" },
+              alt: { type: "text" },
+            },
+          },
+          sections: {
+            type: "object",
+            properties: {
+              id: { type: "keyword" },
+              headline: { type: "text" },
+              content: { type: "text" },
+            },
+          },
         },
       },
     },

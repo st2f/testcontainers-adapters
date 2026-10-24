@@ -117,8 +117,8 @@ src/
 └── adapters/
     └── outbound/
         ├── postgres/
-        │   └── PostgresArticleRepository.ts
-        │                                      # PostgresArticleRepository class
+        │   └── MikroOrmArticleRepository.ts
+        │                                      # MikroOrmArticleRepository class
         │                                      # implements ArticleRepository
         └── opensearch/
             └── OpenSearchArticleRepository.ts
@@ -139,7 +139,7 @@ Adjust filenames or small structural details when implementation needs justify i
 
 Prefer classes for use cases and repository adapter implementations. Use constructor injection for use-case dependencies. Keep the domain model as simple TypeScript data and the repository port as an interface. Tests and test factories do not need to be classes.
 
-Naming: When a file is centered on a single named domain or architectural type (class, interface, or type), use the same PascalCase name for the file (e.g. CreateArticle.ts, ArticleRepository.ts, PostgresArticleRepository.ts). Keep utility/setup files in kebab-case or their conventional lowercase form.
+Naming: When a file is centered on a single named domain or architectural type (class, interface, or type), use the same PascalCase name for the file (e.g. CreateArticle.ts, ArticleRepository.ts, MikroOrmArticleRepository.ts). Keep utility/setup files in kebab-case or their conventional lowercase form.
 
 ## Constraints
 
@@ -162,9 +162,7 @@ Article
 ├── title
 ├── image
 │   ├── url
-│   ├── alt
-│   ├── width
-│   └── height
+│   └── alt
 │
 └── sections[]
     ├── Section
@@ -175,6 +173,8 @@ Article
     └── Section
         └── ...
 ```
+
+Store the image value object (`url`, `alt`) in one PostgreSQL JSONB column and as an object inside the OpenSearch document. Keep sections in a separate PostgreSQL table so the demo still demonstrates atomic aggregate persistence across relational tables.
 
 ## Add-on 2
 

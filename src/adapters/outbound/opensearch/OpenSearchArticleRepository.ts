@@ -4,9 +4,23 @@ import type { ArticleRepository } from "../../../application/ports/ArticleReposi
 
 type ArticleDocument = {
   headline: string;
-  content: string;
   state: Article["status"];
+  image: Article["image"];
+  sections: { id: string; headline: string; content: string }[];
 };
+
+function articleDocument(article: Article): ArticleDocument {
+  return {
+    headline: article.title,
+    state: article.status,
+    image: { ...article.image },
+    sections: article.sections.map((section) => ({
+      id: section.id,
+      headline: section.title,
+      content: section.content,
+    })),
+  };
+}
 
 function isMissingDocument(error: unknown): boolean {
   return (
@@ -30,11 +44,7 @@ export class OpenSearchArticleRepository implements ArticleRepository {
     await this.client.create({
       index: this.index,
       id: article.id,
-      body: {
-        headline: article.title,
-        content: article.content,
-        state: article.status,
-      },
+      body: articleDocument(article),
     });
   }
 
@@ -50,8 +60,13 @@ export class OpenSearchArticleRepository implements ArticleRepository {
       return {
         id: body._id,
         title: source.headline,
-        content: source.content,
         status: source.state,
+        image: { ...source.image },
+        sections: source.sections.map((section) => ({
+          id: section.id,
+          title: section.headline,
+          content: section.content,
+        })),
       };
     } catch (error) {
       if (isMissingDocument(error)) return null;
@@ -65,12 +80,12 @@ export class OpenSearchArticleRepository implements ArticleRepository {
         index: this.index,
         id: article.id,
         body: {
-          doc: {
-            headline: article.title,
-            content: article.content,
-            state: article.status,
+          // Replace the source rather than merging fields; no upsert is configured.
+          script: {
+            lang: "painless",
+            source: "ctx._source = params.article",
+            params: { article: articleDocument(article) },
           },
-          doc_as_upsert: false,
         },
       });
       return true;

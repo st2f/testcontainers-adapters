@@ -45,7 +45,7 @@ Build the smallest working example described in [goal.md](./goal.md). Complete e
 
 ## 5. Implement and verify PostgreSQL
 
-- [x] Add a `PostgresArticleRepository` class implementing `ArticleRepository` in `src/adapters/outbound/postgres/PostgresArticleRepository.ts`, using a constructor-injected `pg` pool and parameterized SQL.
+- [x] Add a `MikroOrmArticleRepository` class implementing `ArticleRepository` in `src/adapters/outbound/postgres/MikroOrmArticleRepository.ts`, using a constructor-injected `pg` pool and parameterized SQL.
 - [x] Define explicit setup DDL for an `articles` table with `article_id`, `title`, `body`, and `publication_status`. Use a text primary key, required fields, and a check constraint for the two statuses.
 - [x] Keep database setup in a small PostgreSQL-specific helper or SQL file reused by the integration fixture. Avoid migration tooling for this single-table demo.
 - [x] Map database rows explicitly to `Article`; use the affected row count to implement the update result.
@@ -103,7 +103,7 @@ The main concepts to demonstrate are the aggregate boundary and atomic persisten
 
 - [x] Select compatible MikroORM packages and configure them explicitly inside the PostgreSQL adapter. Update dependencies and the lockfile; remove direct `pg` dependencies only if no longer used directly.
 - [x] Keep the current flat `Article` shape for this step. Introduce a PostgreSQL persistence entity and explicit mapping to and from the domain object, preserving the existing column names and status constraint.
-- [x] Replace direct SQL in `PostgresArticleRepository` with MikroORM while preserving the repository contract, including update returning `false` without inserting a missing article.
+- [x] Replace direct SQL in `MikroOrmArticleRepository` with MikroORM while preserving the repository contract, including update returning `false` without inserting a missing article.
 - [x] Keep ORM entities, configuration, and entity-manager lifecycle inside the PostgreSQL adapter and its fixture. Domain and application code must have no ORM dependencies. Use an isolated entity manager for each repository operation so unrelated operations do not share pending changes or cached entities.
 - [x] Adapt the Testcontainers fixture to initialize MikroORM and create the schema for its disposable database. Keep schema setup explicit and small; do not introduce a production migration workflow for this demo.
 - [x] Preserve the PostgreSQL constraint test and cleanup guarantees: close the ORM before stopping the container, including when setup or cleanup fails.
@@ -111,23 +111,23 @@ The main concepts to demonstrate are the aggregate boundary and atomic persisten
 
 **Checkpoint:** the flat-model demo passes with MikroORM behind the PostgreSQL adapter and the same application contract. Type checking and all 13 integration tests pass (seven PostgreSQL, six OpenSearch), including fresh-read and failed-write isolation checks.
 
-**Commit:** `refactor: use MikroORM for PostgreSQL persistence`
+**Commit:** `refactor: migrate PostgreSQL article adapter to MikroORM`
 
 ## 10. Persist article aggregates atomically
 
-- [ ] Change `Article` to contain `id`, `title`, `status`, a required `image` (`url`, `alt`, `width`, `height`), and an ordered `sections` array. Each section contains `id`, `title`, and `content`. Move article-level content into sections and remove the article-level `content` field.
-- [ ] Keep domain models as plain TypeScript data. Treat `Article` as the aggregate root: sections belong to an article and are read and written only through `ArticleRepository`. Do not introduce separate image or section repositories.
-- [ ] Preserve the repository signatures and use cases. Document that create and update persist the complete aggregate, with update replacing its editable state while preserving the article ID. Keep section IDs caller-supplied and preserve array order on round trips.
-- [ ] In PostgreSQL, store article fields and image columns in `articles`; store sections in `article_sections` with an article foreign key and explicit position. Define relational constraints and deterministic ordering. Do not use JSONB for aggregate storage.
-- [ ] Map the relational representation through MikroORM entities kept inside the adapter. Ensure section edits, additions, removals, and reordering persist correctly, including removal of sections no longer present in the aggregate.
-- [ ] Persist each PostgreSQL create or update in one transaction covering the article and all its sections. A failed write must leave no partial changes. Keep the missing-update behavior and allow infrastructure errors to propagate.
-- [ ] In OpenSearch, persist the whole aggregate in one document using one document write per create or update. Extend the explicit image and section mappings, retain the distinct persistence field names where appropriate, and preserve section array order. Keep reads by ID real-time and updates unable to upsert missing documents.
-- [ ] Extend shared contract tests to assert full aggregate equality after create and update. Cover image changes, section edits, additions, removals, reordering, and an empty section array. Preserve missing-ID and missing-update coverage and exercise the same application use cases with both adapters.
-- [ ] Add PostgreSQL-specific integration tests that cause a real section write to fail during create and update. Verify from fresh database reads that a failed create leaves no article or sections and a failed update preserves all previously stored article and section data. Do not rely on the ORM identity map or mock the failure.
-- [ ] Extend OpenSearch-specific tests to verify the actual aggregate mapping and that a rejected document replacement leaves the previously stored aggregate intact.
-- [ ] Run type checking and both suites against real containers. Verify rollback tests are deterministic and that section order survives reloads.
+- [x] Change `Article` to contain `id`, `title`, `status`, a required `image` (`url`, `alt`), and an ordered `sections` array. Each section contains `id`, `title`, and `content`. Move article-level content into sections and remove the article-level `content` field.
+- [x] Keep domain models as plain TypeScript data. Treat `Article` as the aggregate root: sections belong to an article and are read and written only through `ArticleRepository`. Do not introduce separate image or section repositories.
+- [x] Preserve the repository signatures and use cases. Document that create and update persist the complete aggregate, with update replacing its editable state while preserving the article ID. Keep section IDs caller-supplied and preserve array order on round trips.
+- [x] In PostgreSQL, store article fields in `articles`, with the image value object in one `image` JSONB column; store sections in `article_sections` with an article foreign key and explicit position. Define relational constraints and deterministic ordering. Keep sections relational so aggregate persistence demonstrates writes across tables.
+- [x] Map the relational representation through MikroORM entities kept inside the adapter. Ensure section edits, additions, removals, and reordering persist correctly, including removal of sections no longer present in the aggregate.
+- [x] Persist each PostgreSQL create or update in one transaction covering the article and all its sections. A failed write must leave no partial changes. Keep the missing-update behavior and allow infrastructure errors to propagate.
+- [x] In OpenSearch, persist the whole aggregate in one document using one document write per create or update. Extend the explicit image and section mappings, retain the distinct persistence field names where appropriate, and preserve section array order. Keep reads by ID real-time and updates unable to upsert missing documents.
+- [x] Extend shared contract tests to assert full aggregate equality after create and update. Cover image changes, section edits, additions, removals, reordering, and an empty section array. Preserve missing-ID and missing-update coverage and exercise the same application use cases with both adapters.
+- [x] Add PostgreSQL-specific integration tests that cause a real section write to fail during create and update. Verify from fresh database reads that a failed create leaves no article or sections and a failed update preserves all previously stored article and section data. Do not rely on the ORM identity map or mock the failure.
+- [x] Extend OpenSearch-specific tests to verify the actual aggregate mapping and that a rejected document replacement leaves the previously stored aggregate intact.
+- [x] Run type checking and both suites against real containers. Verify rollback tests are deterministic and that section order survives reloads.
 
-**Checkpoint:** both adapters persist complete aggregates; relational writes roll back together and OpenSearch replaces a single document atomically. All contract and technology-specific tests pass.
+**Checkpoint:** both adapters persist complete aggregates; relational writes roll back together and OpenSearch replaces a single document atomically. Type checking and all 22 integration tests pass (12 PostgreSQL, 10 OpenSearch), including section ordering, removal, aggregate isolation, and persistence failure checks.
 
 **Commit:** `feat: persist article aggregates atomically`
 

@@ -1,16 +1,17 @@
 import type { Article } from "../../domain/Article.js";
 
 export interface ArticleRepository {
-  /** Creates an article using its caller-supplied ID. */
+  /** Creates the complete aggregate atomically, using caller-supplied article and section IDs. */
   create(article: Article): Promise<void>;
 
-  /** Returns the article, or null when the ID does not exist. */
+  /** Returns the complete aggregate with sections in array order, or null if missing. */
   findById(id: string): Promise<Article | null>;
 
   /**
-   * Replaces the title, content, and status of the article identified by article.id.
-   * Preserves its ID and returns true if it existed; otherwise returns false
-   * without creating an article.
+   * Atomically replaces the title, status, image, and ordered sections of article.id.
+   * Sections belong to their article; their IDs are scoped to that aggregate.
+   * Preserves the article ID and returns true if it existed; otherwise returns
+   * false without creating an article. Persistence failures propagate as errors.
    */
   update(article: Article): Promise<boolean>;
 }
